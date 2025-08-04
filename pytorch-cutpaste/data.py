@@ -44,17 +44,17 @@ class TrainDataset(data.Dataset):
         self.data = data
 
         if self.data == 'RESC':
-            self.data_root = '/home/jinan/Datasets/Medical-datasets/RESC/Train/train/good/'
+            self.data_root = '/home/z0055k5c/BMAD/data/RESC/Train/train/good/'
         elif self.data == 'OCT2017':
-            self.data_root = '/home/jinan/Datasets/Medical-datasets/OCT2017/train/good/'
+            self.data_root = '/home/z0055k5c/BMAD/data/OCT2017/train/good/'
         elif self.data == 'liver':
-            self.data_root = '/home/jinan/Datasets/Medical-datasets/Liver/Train/hist_DIY/train/good/'
+            self.data_root = '/home/z0055k5c/BMAD/data/Liver/Train/hist_DIY/train/good/'
         elif self.data == 'bras2021':
-            self.data_root = '/home/jinan/Datasets/Medical-datasets/Brain/train/good/'
+            self.data_root = '/home/z0055k5c/BMAD/data/Brain/train/good/'
         elif self.data == 'chest':
-            self.data_root = '/home/jinan/Datasets/Medical-datasets/chest-rsna/Chest-RSNA/train/good/'
+            self.data_root = '/home/z0055k5c/BMAD/data/chest-rsna/train/good/'
         elif self.data == 'camelyon':
-            self.data_root = '/home/jinan/Datasets/Medical-datasets/camelyon16_256/train/good/'
+            self.data_root = '/home/z0055k5c/BMAD/data/camelyon16_256/train/good/'
         self.data_list = os.listdir(self.data_root)
                 
     def load_image(self, path):
@@ -84,26 +84,26 @@ class ValidDataset(data.Dataset):
         self.data = data
 
         if self.data == 'RESC':
-            self.good = '/home/jinan/Datasets/Medical-datasets/RESC/Val/val/good/'
-            self.ungood = '/home/jinan/Datasets/Medical-datasets/RESC/Val/val/Ungood/'
-            self.mask = '/home/jinan/Datasets/Medical-datasets/RESC/Val/val_label/Ungood/'
+            self.good = '/home/z0055k5c/BMAD/data/RESC/Val/val/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/RESC/Val/val/Ungood/'
+            self.mask = '/home/z0055k5c/BMAD/data/RESC/Val/val_label/Ungood/'
         elif self.data == 'OCT2017':
-            self.good = '/home/jinan/Datasets/Medical-datasets/OCT2017/val/good/'
-            self.ungood = '/home/jinan/Datasets/Medical-datasets/OCT2017/val/Ungood/'
+            self.good = '/home/z0055k5c/BMAD/data/OCT2017/val/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/OCT2017/val/Ungood/'
         elif self.data == 'liver':
-            self.good = '/home/jinan/Datasets/Medical-datasets/Liver/Train/hist_DIY/valid/img/good/'
-            self.ungood = '/home/jinan/Datasets/Medical-datasets/Liver/Train/hist_DIY/valid/img/Ungood/'
-            self.mask = '/home/jinan/Datasets/Medical-datasets/Liver/Train/hist_DIY/valid/label/Ungood/'
+            self.good = '/home/z0055k5c/BMAD/data/Liver/Train/hist_DIY/valid/img/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/Liver/Train/hist_DIY/valid/img/Ungood/'
+            self.mask = '/home/z0055k5c/BMAD/data/Liver/Train/hist_DIY/valid/label/Ungood/'
         elif self.data == 'bras2021':
-            self.good = '/home/jinan/Datasets/Medical-datasets/Brain/valid/good/img/'
-            self.ungood = '/home/jinan/Datasets/Medical-datasets/Brain/valid/Ungood/img/'
-            self.mask = '/home/jinan/Datasets/Medical-datasets/Brain/valid/Ungood/label/'
+            self.good = '/home/z0055k5c/BMAD/data/Brain/valid/good/img/'
+            self.ungood = '/home/z0055k5c/BMAD/data/Brain/valid/Ungood/img/'
+            self.mask = '/home/z0055k5c/BMAD/data/Brain/valid/Ungood/label/'
         elif self.data == 'chest':
-            self.good = '/home/jinan/Datasets/Medical-datasets/chest-rsna/Chest-RSNA/val/good/'
-            self.ungood = '/home/jinan/Datasets/Medical-datasets/chest-rsna/Chest-RSNA/val/Ungood/'
+            self.good = '/home/z0055k5c/BMAD/data/chest-rsna/val/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/chest-rsna/val/Ungood/'
         elif self.data == 'camelyon':
-            self.good = '/home/jinan/Datasets/Medical-datasets/camelyon16_256/valid/good/'
-            self.ungood = '/home/jinan/Datasets/Medical-datasets/camelyon16_256/valid/Ungood/'
+            self.good = '/home/z0055k5c/BMAD/data/camelyon16_256/valid/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/camelyon16_256/valid/Ungood/'
         self.good_list = os.listdir(self.good)
         self.ungood_list = os.listdir(self.ungood)
                 
@@ -159,8 +159,8 @@ class TestDataset(data.Dataset):
             self.ungood = '/home/jinan/Datasets/gragh_resc/'
             self.mask = '/home/jinan/Datasets/gragh_resc/'
         elif self.data == 'OCT2017':
-            self.good = '/home/jinan/Datasets/Medical-datasets/OCT2017/test/good/'
-            self.ungood = '/home/jinan/Datasets/Medical-datasets/OCT2017/test/Ungood/'
+            self.good = '/home/z0055k5c/BMAD/data/OCT2017/test/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/OCT2017/test/Ungood/'
         elif self.data == 'liver':
             self.good = '/home/jinan/Datasets/graph_img/'
             self.ungood = '/home/jinan/Datasets/graph_img/'
@@ -170,11 +170,11 @@ class TestDataset(data.Dataset):
             self.ungood = '/home/jinan/Datasets/graph_img_brain/'
             self.mask = '/home/jinan/Datasets/graph_img_brain/'
         elif self.data == 'chest':
-            self.good = '/home/jinan/Datasets/Medical-datasets/chest-rsna/Chest-RSNA/test/good/'
-            self.ungood = '/home/jinan/Datasets/Medical-datasets/chest-rsna/Chest-RSNA/test/Ungood/'
+            self.good = '/home/z0055k5c/BMAD/data/chest-rsna/test/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/chest-rsna/test/Ungood/'
         elif self.data == 'camelyon':
-            self.good = '/home/jinan/Datasets/Medical-datasets/camelyon16_256/test/good/'
-            self.ungood = '/home/jinan/Datasets/Medical-datasets/camelyon16_256/test/Ungood/'
+            self.good = '/home/z0055k5c/BMAD/data/camelyon16_256/test/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/camelyon16_256/test/Ungood/'
         self.good_list = os.listdir(self.good)
         self.ungood_list = os.listdir(self.ungood)
                 
