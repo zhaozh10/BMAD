@@ -8,7 +8,7 @@ import config as c
 from freia_funcs import *
 
 WEIGHT_DIR = 'cs-flow/weights'
-MODEL_DIR = 'cs-flow/models/tmp'
+MODEL_DIR = 'cs-flow/checkpoint/'
 
 
 def get_cs_flow_model(input_dim=c.n_feat):
@@ -66,13 +66,19 @@ class FeatureExtractor(nn.Module):
 
 
 def save_model(model, filename):
-    if not os.path.exists(MODEL_DIR):
-        os.makedirs(MODEL_DIR)
-    torch.save(model, os.path.join(MODEL_DIR, filename))
+    target_path=f"{os.path.join(MODEL_DIR, filename)}.pth"
+    target_dir= os.path.dirname(target_path)
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+    print(f"Saving model to {target_path}")
+    # if not os.path.exists(MODEL_DIR):
+    #     os.makedirs(MODEL_DIR)
+    torch.save(model, target_path)
 
 
 def load_model(filename):
-    path = os.path.join(MODEL_DIR, filename)
-    print(f"Loading {path}...")
-    model = torch.load(path)
+    source_path=f"{os.path.join(MODEL_DIR, filename)}.pth"
+    # path = os.path.join(MODEL_DIR, filename)
+    print(f"Loading {source_path}...")
+    model = torch.load(source_path)
     return model

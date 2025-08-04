@@ -1,4 +1,4 @@
-epochs: 256
+epochs: 5
 model_dir: pytorch-cutpaste/models
 test_epochs: 10
 freeze_resnet: 20

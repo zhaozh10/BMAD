@@ -7,6 +7,7 @@ from scipy.ndimage.filters import gaussian_filter
 from model import get_cs_flow_model, save_model, FeatureExtractor, nf_forward
 from utils import *
 import cv2
+from tqdm import tqdm
 import torch.nn.functional as F
 from numpy import ndarray
 from skimage import measure
@@ -22,7 +23,8 @@ def train(train_loader, valid_loader, test_loader, config):
     # n_feat = {"effnetB5": 304}[config['extractor']]  # dependend from feature extractor
     # map_size = (config['img_size'][0] // 32, config['img_size'] // 32)
     # kernel_sizes = [3] * (config['n_coupling_blocks'] - 1) + [5]
-    
+    max_auc=0
+    best_epoch=0
     model = get_cs_flow_model()
     optimizer = torch.optim.Adam(model.parameters(), lr=config['lr_init'], eps=1e-04, weight_decay=1e-5)
     model.to(config['device'])
@@ -36,12 +38,12 @@ def train(train_loader, valid_loader, test_loader, config):
 
     z_obs = Score_Observer('AUROC')
 
-    for epoch in range(config['meta_epochs']):
+    for epoch in tqdm(range(config['meta_epochs'])):
         # train some epochs
         model.train()
         if config['verbose']:
             print(F'\nTrain epoch {epoch}')
-        for sub_epoch in range(config['sub_epochs']):
+        for sub_epoch in tqdm(range(config['sub_epochs'])):
             train_loss = list()
             # for i, data in enumerate(tqdm(train_loader, disable=c.hide_tqdm_bar)):
             for i, sample in enumerate(train_loader):
@@ -68,7 +70,7 @@ def train(train_loader, valid_loader, test_loader, config):
         # evaluate
         model.eval()
         if config['verbose']:
-            print('\nCompute loss and scores on test set:')
+            print('\nCompute loss and scores on validation set:')
         test_loss = list()
         test_z = list()
         test_labels = list()
@@ -79,9 +81,10 @@ def train(train_loader, valid_loader, test_loader, config):
 
         with torch.no_grad():
             #for i, data in enumerate(tqdm(test_loader, disable=c.hide_tqdm_bar)):
-            for i, sample in enumerate(valid_loader):
+            for i, sample in enumerate(tqdm(valid_loader)):
                 #data = sample['image']
                 inputs, labels = preprocess_batch(sample)
+                inputs,labels=inputs.to('cuda'),labels.to('cuda')
                 if not config['pre_extracted']:
                     inputs = fe(inputs)
 
@@ -117,92 +120,107 @@ def train(train_loader, valid_loader, test_loader, config):
 
         test_loss = np.mean(np.array(test_loss))
         if config['verbose']:
-            print('Epoch: {:d} \t test_loss: {:.4f}'.format(epoch, test_loss))
+            print('Epoch: {:d} \t val_loss: {:.4f}'.format(epoch, test_loss))
 
         test_labels = np.concatenate(test_labels)
         is_anomaly = np.array([0 if l == 0 else 1 for l in test_labels])
 
         anomaly_score = np.concatenate(test_z, axis=0)
-        z_obs.update(roc_auc_score(is_anomaly, anomaly_score), epoch,
+        val_cur_auc=roc_auc_score(is_anomaly, anomaly_score)
+        z_obs.update(val_cur_auc, epoch,
                      print_score=config['verbose'] or epoch == config['meta_epochs'] - 1)
+        
 
         # auroc_px = round(metrics.roc_auc_score(gt_list_px, pr_list_px), 5)
         # aupro_px = round(np.mean(aupro_list), 5)
         # print('auroc_px: ', auroc_px, ',', 'aupro_px', aupro_px)
         # print("dice_px: ", (round(np.mean(dice_list), 5)))
+        if val_cur_auc > max_auc:
+            max_auc = val_cur_auc
+            best_epoch=epoch
+            save_model(model, config['modelname'])
+            print(f"New best model saved with Val AUC: {max_auc:.4f} at epoch {best_epoch}")
 
-        # evaluate
-        model.eval()
-        if config['verbose']:
-            print('\nCompute loss and scores on test set:')
-        import time
-        t1=time.time()
-        test_loss = list()
-        test_z = list()
-        test_labels = list()
-        dice_list = []
-        aupro_list = []
-        gt_list_px = []
-        pr_list_px = []
+    #     # evaluate
+    #     model.eval()
+    #     if config['verbose']:
+    #         print('\nCompute loss and scores on test set:')
+    #     import time
+    #     t1=time.time()
+    #     test_loss = list()
+    #     test_z = list()
+    #     test_labels = list()
+    #     dice_list = []
+    #     aupro_list = []
+    #     gt_list_px = []
+    #     pr_list_px = []
 
-        with torch.no_grad():
-            #for i, data in enumerate(tqdm(test_loader, disable=c.hide_tqdm_bar)):
-            for i, sample in enumerate(test_loader):
-                #data = sample['image']
-                inputs, labels = preprocess_batch(sample)
-                if not config['pre_extracted']:
-                    inputs = fe(inputs)
+    #     with torch.no_grad():
+    #         #for i, data in enumerate(tqdm(test_loader, disable=c.hide_tqdm_bar)):
+    #         for i, sample in enumerate(test_loader):
+    #             #data = sample['image']
+    #             inputs, labels = preprocess_batch(sample)
+    #             inputs,labels=inputs.to('cuda'),labels.to('cuda')
+    #             if not config['pre_extracted']:
+    #                 inputs = fe(inputs)
 
-                z, jac = nf_forward(model, inputs)
-                loss = get_loss(z, jac)
+    #             z, jac = nf_forward(model, inputs)
+    #             loss = get_loss(z, jac)
 
-                z_concat = t2np(concat_maps(z))
-                score = np.mean(z_concat ** 2 / 2, axis=(1, 2))
-                test_z.append(score)
-                test_loss.append(t2np(loss))
-                test_labels.append(t2np(labels))
+    #             z_concat = t2np(concat_maps(z))
+    #             score = np.mean(z_concat ** 2 / 2, axis=(1, 2))
+    #             test_z.append(score)
+    #             test_loss.append(t2np(loss))
+    #             test_labels.append(t2np(labels))
 
-                # z_grouped = list()
-                # likelihood_grouped = list()
-                # for i in range(len(z)):
-                #     z_grouped.append(z[i].view(-1, *z[i].shape[1:]))
-                #     likelihood_grouped.append(torch.mean(z_grouped[-1] ** 2, dim=(1,)))
-                # map = likelihood_grouped[0][0]
-                # print(map.unsqueeze(dim=0).unsqueeze(dim=0).shape)
-                # print(sample['image'].shape[2:])
-                # map_to_viz = t2np(F.interpolate(map.unsqueeze(dim=0).unsqueeze(dim=0), size=sample['image'].shape[2:], mode='bilinear', align_corners=False))[0][0]
-                # map_to_viz = (map_to_viz - min(map_to_viz.flatten())) / (
-                # max(map_to_viz.flatten()) - min(map_to_viz.flatten()))
-                # map = gaussian_filter(map_to_viz, sigma=4)
-                # gt_list_px.extend(sample['mask'].cpu().numpy().astype(int).ravel())
-                #print(mask.cpu().numpy().astype(int).ravel().shape)
-                # pr_list_px.extend(map.ravel())
+    #             # z_grouped = list()
+    #             # likelihood_grouped = list()
+    #             # for i in range(len(z)):
+    #             #     z_grouped.append(z[i].view(-1, *z[i].shape[1:]))
+    #             #     likelihood_grouped.append(torch.mean(z_grouped[-1] ** 2, dim=(1,)))
+    #             # map = likelihood_grouped[0][0]
+    #             # print(map.unsqueeze(dim=0).unsqueeze(dim=0).shape)
+    #             # print(sample['image'].shape[2:])
+    #             # map_to_viz = t2np(F.interpolate(map.unsqueeze(dim=0).unsqueeze(dim=0), size=sample['image'].shape[2:], mode='bilinear', align_corners=False))[0][0]
+    #             # map_to_viz = (map_to_viz - min(map_to_viz.flatten())) / (
+    #             # max(map_to_viz.flatten()) - min(map_to_viz.flatten()))
+    #             # map = gaussian_filter(map_to_viz, sigma=4)
+    #             # gt_list_px.extend(sample['mask'].cpu().numpy().astype(int).ravel())
+    #             #print(mask.cpu().numpy().astype(int).ravel().shape)
+    #             # pr_list_px.extend(map.ravel())
 
-                # if sample['label'].item()!=0:
-                #     mask = sample['mask']
-                #     dice_list.append(compute_dice(mask.cpu().numpy().astype(int)[0], map.reshape(sample['image'].shape[0],256,256)))
-                #     aupro_list.append(compute_pro(mask.cpu().numpy().astype(int)[0], map.reshape(sample['image'].shape[0],256,256)))
+    #             # if sample['label'].item()!=0:
+    #             #     mask = sample['mask']
+    #             #     dice_list.append(compute_dice(mask.cpu().numpy().astype(int)[0], map.reshape(sample['image'].shape[0],256,256)))
+    #             #     aupro_list.append(compute_pro(mask.cpu().numpy().astype(int)[0], map.reshape(sample['image'].shape[0],256,256)))
 
-        test_loss = np.mean(np.array(test_loss))
-        if config['verbose']:
-            print('Epoch: {:d} \t test_loss: {:.4f}'.format(epoch, test_loss))
+    #     test_loss = np.mean(np.array(test_loss))
+    #     if config['verbose']:
+    #         print('Epoch: {:d} \t test_loss: {:.4f}'.format(epoch, test_loss))
 
-        test_labels = np.concatenate(test_labels)
-        is_anomaly = np.array([0 if l == 0 else 1 for l in test_labels])
+    #     test_labels = np.concatenate(test_labels)
+    #     is_anomaly = np.array([0 if l == 0 else 1 for l in test_labels])
 
-        anomaly_score = np.concatenate(test_z, axis=0)
-        z_obs.update(roc_auc_score(is_anomaly, anomaly_score), epoch,
-                     print_score=config['verbose'] or epoch == config['meta_epochs'] - 1)
-        t2=time.time()
-        print(t2-t1, len(test_loader), len(test_loader)/(t2-t1))
-        # auroc_px = round(metrics.roc_auc_score(gt_list_px, pr_list_px), 5)
-        # aupro_px = round(np.mean(aupro_list), 5)
-        # print('auroc_px: ', auroc_px, ',', 'aupro_px', aupro_px)
-        # print("dice_px: ", (round(np.mean(dice_list), 5)))
+    #     anomaly_score = np.concatenate(test_z, axis=0)
+    #     test_auc=roc_auc_score(is_anomaly, anomaly_score)
+    #     z_obs.update(test_auc, epoch,
+    #                  print_score=config['verbose'] or epoch == config['meta_epochs'] - 1)
+    #     t2=time.time()
+    #     print(t2-t1, len(test_loader), len(test_loader)/(t2-t1))
+    #     # auroc_px = round(metrics.roc_auc_score(gt_list_px, pr_list_px), 5)
+    #     # aupro_px = round(np.mean(aupro_list), 5)
+    #     # print('auroc_px: ', auroc_px, ',', 'aupro_px', aupro_px)
+    #     # print("dice_px: ", (round(np.mean(dice_list), 5)))
 
-    if config['save_model']:
-        model.to('cpu')
-        save_model(model, config['modelname'])
+    #     # if val_cur_auc > max_auc:
+    #     #     max_auc = val_cur_auc
+    #     #     best_epoch=epoch
+    #     #     save_model(model, config['modelname'])
+    #     #     print(f"New best model saved with Val AUC: {max_auc:.4f} Test AUC: {test_auc:.4f} at epoch {best_epoch}")
+
+    # # if config['save_model']:
+    # #     model.to('cpu')
+    # #     save_model(model, config['modelname'])
 
     return z_obs.max_score, z_obs.last, z_obs.min_loss_score
 

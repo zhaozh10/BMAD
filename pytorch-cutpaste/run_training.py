@@ -96,7 +96,7 @@ def run_training(data_type="camelyon",
     dataloader_inf =  get_data_inf()
     # From paper: "Note that, unlike conventional definition for an epoch,
     #              we define 256 parameter update steps as one epoch.
-    for step in range(epochs):
+    for step in tqdm(range(epochs)):
         # model.eval()
         # valid_auc, len_valid= eval_model(model_name, data_type, device=device,
         #                     save_plots=False,
@@ -245,6 +245,7 @@ if __name__ == '__main__':
     print(f"using device: {device}")
     
     # create modle dir
+    print(f"creating model dir {config['model_dir']}")
     Path(config['model_dir']).mkdir(exist_ok=True, parents=True)
 
     data_type = args.type

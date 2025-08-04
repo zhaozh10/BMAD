@@ -53,6 +53,8 @@ class TrainDataset(data.Dataset):
             self.data_root = '/home/z0055k5c/BMAD/data/Brain/train/good/'
         elif self.data == 'chest':
             self.data_root = '/home/z0055k5c/BMAD/data/chest-rsna/train/good/'
+        elif self.data == 'mammo':
+            self.data_root = '/home/z0055k5c/BMAD/data/vindr-mammo/train/good/'
         elif self.data == 'camelyon':
             self.data_root = '/home/z0055k5c/BMAD/data/camelyon16_256/train/good/'
         self.data_list = os.listdir(self.data_root)
@@ -100,7 +102,11 @@ class ValidDataset(data.Dataset):
             self.mask = '/home/z0055k5c/BMAD/data/Brain/valid/Ungood/label/'
         elif self.data == 'chest':
             self.good = '/home/z0055k5c/BMAD/data/chest-rsna/val/good/'
-            self.ungood = '/home/z0055k5c/BMAD/data/chest-rsna/val/Ungood/'
+            # self.ungood = '/home/z0055k5c/BMAD/data/chest-rsna/val/Ungood/'
+            self.ungood = '/home/z0055k5c/BMAD/data/chest-rsna/val/LungOpacity/'
+        elif self.data == 'mammo':
+            self.good = '/home/z0055k5c/BMAD/data/vindr-mammo/val/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/vindr-mammo/val/mass/'
         elif self.data == 'camelyon':
             self.good = '/home/z0055k5c/BMAD/data/camelyon16_256/valid/good/'
             self.ungood = '/home/z0055k5c/BMAD/data/camelyon16_256/valid/Ungood/'
@@ -118,7 +124,7 @@ class ValidDataset(data.Dataset):
         if idx < len(self.ungood_list):
             img_path = self.ungood + self.ungood_list[idx]
             img = self.load_image(img_path)
-            if self.data == 'OCT2017' or self.data == 'chest' or self.data == 'camelyon':
+            if self.data == 'OCT2017' or self.data == 'chest' or self.data == 'camelyon' or self.data=='mammo':
                 mask = torch.zeros(1,256, 256)
             else:
                 mask_path = self.mask + self.ungood_list[idx]
@@ -171,7 +177,11 @@ class TestDataset(data.Dataset):
             self.mask = '/home/jinan/Datasets/graph_img_brain/'
         elif self.data == 'chest':
             self.good = '/home/z0055k5c/BMAD/data/chest-rsna/test/good/'
-            self.ungood = '/home/z0055k5c/BMAD/data/chest-rsna/test/Ungood/'
+            # self.ungood = '/home/z0055k5c/BMAD/data/chest-rsna/test/Ungood/'
+            self.ungood = '/home/z0055k5c/BMAD/data/chest-rsna/test/LungOpacity/'
+        elif self.data == 'mammo':
+            self.good = '/home/z0055k5c/BMAD/data/vindr-mammo/test/good/'
+            self.ungood = '/home/z0055k5c/BMAD/data/vindr-mammo/test/mass/'
         elif self.data == 'camelyon':
             self.good = '/home/z0055k5c/BMAD/data/camelyon16_256/test/good/'
             self.ungood = '/home/z0055k5c/BMAD/data/camelyon16_256/test/Ungood/'
@@ -189,7 +199,7 @@ class TestDataset(data.Dataset):
         if idx < len(self.ungood_list):
             img_path = self.ungood + self.ungood_list[idx]
             img = self.load_image(img_path)
-            if self.data == 'OCT2017' or self.data == 'chest' or self.data == 'camelyon':
+            if self.data == 'OCT2017' or self.data == 'chest' or self.data == 'camelyon' or self.data=='mammo':
                 mask = torch.zeros(1,256, 256)
             else:
                 mask_path = self.mask + self.ungood_list[idx]

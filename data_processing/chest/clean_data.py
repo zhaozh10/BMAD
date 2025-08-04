@@ -9,7 +9,7 @@ import csv
 
 
 filename = 'stage_2_detailed_class_info.csv'
-image_file = '/home/jinan/Datasets/Medical-datasets/chest-rsna/stage_2_train_images/'
+image_file = '/home/z0055k5c/BMAD/data/chest-rsna/stage_2_train_images/'
 with open(filename) as f:
     reader = csv.reader(f)
     header_row = next(reader)

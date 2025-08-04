@@ -26,7 +26,7 @@ cached_type = None
 
 def get_train_embeds(model, size, defect_type, transform, device):
     # train data / train kde
-    train_data = TrainDataset(data='camelyon', transform=transform)
+    train_data = TrainDataset(data='chest', transform=transform)
 
     dataloader_train = DataLoader(train_data, batch_size=64,
                             shuffle=False, num_workers=0)

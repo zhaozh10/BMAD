@@ -1,9 +1,9 @@
 # device settings
 device: cuda  # or 'cpu'
-modelname: chest_0723_opacity/best
+modelname: mammo_0723_mass_v2/best
 # /home/z0055k5c/BMAD/data/Chest-RSNA/
 # data settings
-dataset_path: /home/z0055k5c/BMAD/data/chest-rsna/  # parent directory of datasets
+dataset_path: /home/z0055k5c/BMAD/data/vindr-mammo/  # parent directory of datasets
 pre_extracted: True  # were feature preextracted with extract_features?
 
 img_size: 256  # image size of highest scale, others are //2, //4"image width/height should be a multiple of 128"
@@ -14,7 +14,7 @@ clamp: 3  # clamping parameter
 max_grad_norm: 1  # clamp gradients to this norm
 n_coupling_blocks: 4  # higher = more flexible = more unstable
 fc_internal: 1024  # * 4 # number of neurons in hidden layers of s-t-networks
-lr_init: 0.0002  # inital learning rate
+lr_init: 0.00005  # inital learning rate
 use_gamma: True
 
 extractor: "effnetB5"  # feature dataset name (which was used in 'extract_features.py' as 'export_name')
